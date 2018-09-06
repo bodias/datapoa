@@ -18,13 +18,11 @@ EMPRESAS = ['CARRIS','MOB','VIA LESTE','MAIS','VIVA SUL']
 def cria_carro(linhas,idcarro,hora):
     #seleciona uma linha de forma aleatoria
     linha_selecionada = int(round( uniform(0,len(linhas)-1)))
-    
-    print('criando novo carro na linha {} id {}'.format(linhas[linha_selecionada]['nome'],idcarro))
-    # carro é a informação da linha + enriquecimento
+    print("criando novo carro na linha {} id {}".format(linhas[linha_selecionada]['nome'].encode('utf-8'),idcarro))
     carro = linhas[linha_selecionada].copy()
     
     carro['ts'] = time.time()
-    carro['datahora'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))    
+    carro['datahora'] = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(time.time()))    
     carro['idcarro'] = idcarro
     carro['empresa'] = EMPRESAS[int(round(uniform(0,len(EMPRESAS)-1)))]
     carro['acessivel'] = uniform(0,1) < 0.3
@@ -45,8 +43,7 @@ def cria_carro(linhas,idcarro,hora):
                                       carro['total_passageiros_hora_isento'] + \
                                       carro['total_passageiros_hora_integral']
             
-    carro['lat'] = round(uniform(MNLAT,MXLAT),6) 
-    carro['lng'] = round(uniform(MNLON,MXLON),6)   
+    carro['localizacao'] = [round(uniform(MNLAT,MXLAT),6), round(uniform(MNLON,MXLON),6)]
     
     return carro
 
@@ -61,7 +58,7 @@ def executa_gerador(elastic):
         carro = carros[int(round(uniform(0,len(carros)-1)))]    
             
         carro['ts'] = time.time()
-        carro['datahora'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))    
+        carro['datahora'] = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(time.time()))    
         #minutos
         carro['tempo_viagem'] += SLEEP_INTERVAL  
         novos_passageiros = int(round(uniform(1,SLEEP_INTERVAL)))
@@ -84,15 +81,13 @@ def executa_gerador(elastic):
                                      carro['total_passageiros_isento'] + \
                                      carro['total_passageiros_integral']      
 
-
-        carro['lat'] = round(uniform(MNLAT,MXLAT),6) 
-        carro['lng'] = round(uniform(MNLON,MXLON),6)  
+        carro['localizacao'] = [round(uniform(MNLAT,MXLAT),6), round(uniform(MNLON,MXLON),6)]
 
         time.sleep(SLEEP_INTERVAL)
         print(carro)
         
-        elastic.index(index="paradas_index",
-             doc_type="json",
+        elastic.index(index="datapoa_carros",
+             doc_type="carros",
              body=carro,
              ignore=400)
 
@@ -106,7 +101,7 @@ def executa_gerador(elastic):
                 novo_carro = cria_carro(linhas,idcarro,hora)
                 carros.append(novo_carro)
              
-#Busca informações sobre linhas via API
+#Busca informacoes sobre linhas via API
 resp = requests.get('http://www.poatransporte.com.br/php/facades/process.php?a=nc&p=%&t=o')
 
 if resp.status_code != 200:
@@ -130,7 +125,7 @@ idcarros = np.random.permutation(tbl_horaria_frequencia[hora-1]['max'])
 min_carros_hora = tbl_horaria_frequencia[hora-1]['min']
 max_carros_hora = tbl_horaria_frequencia[hora-1]['max']
 total_carros_hora = int(round(uniform(min_carros_hora,max_carros_hora)))
-total_carros_hora = 5 #temporario para teste
+#total_carros_hora = 5 #temporario para teste
 
 #canto inferior esquerdo
 MXLAT = -30.14296222668432 
@@ -139,7 +134,7 @@ MXLON = -51.87917968750003
 MNLAT = -29.79200328961529
 MNLON = -50.56082031250003
 
-print("Inicializando informações sobre carros...")
+print("Inicializando informacoes sobre carros...")
 carros = []
 for i in range(0,total_carros_hora):
     idcarro = idcarros[i].item() #para converter para um tipo nativo do python     
