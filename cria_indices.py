@@ -77,7 +77,10 @@ paradas =  {
         },
         "terminal": {
           "type": "boolean"          
-        }
+        },
+		"n_linhas" : {
+		  "type": "long"
+		}
       }
     }
 
@@ -125,24 +128,24 @@ carros =  {
             }
           }
         },
-        "tempo_viagem": {
-          "type": "float"
-        },
+        # "tempo_viagem": {
+          # "type": "float"
+        # },
         "total_passageiros": {
           "type": "long"
         },
-        "total_passageiros_hora": {
-          "type": "long"
-        },
-        "total_passageiros_hora_integral": {
-          "type": "long"
-        },
-        "total_passageiros_hora_isento": {
-          "type": "long"
-        },
-        "total_passageiros_hora_meia": {
-          "type": "long"
-        },
+        # "total_passageiros_hora": {
+          # "type": "long"
+        # },
+        # "total_passageiros_hora_integral": {
+          # "type": "long"
+        # },
+        # "total_passageiros_hora_isento": {
+          # "type": "long"
+        # },
+        # "total_passageiros_hora_meia": {
+          # "type": "long"
+        # },
         "total_passageiros_integral": {
           "type": "long"
         },
@@ -188,7 +191,8 @@ def importa_paradas(es):
     for document in data:
         document['localizacao'] = [float(document['longitude']),float(document['latitude'])]
         document['terminal'] = document['terminal'] == 'S'
-        
+        document['n_linhas'] = len(document['linhas'])
+		
         es.index(index="datapoa_paradas",
              doc_type="paradas",
              body=document,
